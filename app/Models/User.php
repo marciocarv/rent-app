@@ -9,13 +9,24 @@ use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use App\Enums\UserRole;
 
-#[Fillable(['name', 'email', 'password'])]
+#[Fillable(['name', 'email', 'password', 'role', 'landlord_id'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
+
+    public function isLandlord(): bool
+    {
+        return $this->role === UserRole::Landlord;
+    }
+
+    public function isTenant(): bool
+    {
+        return $this->role === UserRole::Tenant;
+    }
 
     /**
      * Get the attributes that should be cast.
@@ -27,6 +38,8 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'role' => UserRole::class,
+            'landlord_id',
         ];
     }
 }
