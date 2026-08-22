@@ -12,8 +12,25 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+        $middleware->redirectUsersTo(function () {
+            if (auth()->check() && auth()->user()->role === 'tenant') {
+                return route('tenant.dashboard');
+            }
+
+            return route('dashboard');
+        });
     })
+
+    ->withMiddleware(function (Middleware $middleware) {
+        $middleware->redirectUsersTo(function () {
+            if (auth()->check() && auth()->user()->isTenant()) {
+                return route('tenants.dashboard');
+            }
+
+            return route('dashboard');
+        });
+    })
+
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(
             fn (Request $request) => $request->is('api/*') || $request->expectsJson(),

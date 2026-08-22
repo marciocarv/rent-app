@@ -10,9 +10,24 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use App\Enums\UserRole;
+use App\Enums\MaritalStatus;
 
-#[Fillable(['name', 'email', 'password', 'role', 'landlord_id'])]
+#[Fillable(['name',
+            'email',
+            'password',
+            'role',
+            'landlord_id',
+            'nationality',
+            'profession',
+            'marital_status',
+            'rg',
+            'document_number',
+            'phone',
+            'address',
+            'spouse_name',
+            'spouse_document'])]
 #[Hidden(['password', 'remember_token'])]
+
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
@@ -40,6 +55,7 @@ class User extends Authenticatable
             'password' => 'hashed',
             'role' => UserRole::class,
             'landlord_id',
+            'marital_status' => MaritalStatus::class,
         ];
     }
 }

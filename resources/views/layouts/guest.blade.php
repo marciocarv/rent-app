@@ -5,25 +5,36 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
-        <title>{{ config('app.name', 'Laravel') }}</title>
+        <title>{{ config('app.name', 'Rent.app') }}</title>
 
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
-        <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
+        <link href="https://fonts.bunny.net/css?family=figtree:400,500,600,700&display=swap" rel="stylesheet" />
 
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
-    <body class="font-sans text-gray-900 antialiased">
-        <div class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 bg-gray-100">
+    <body class="font-sans antialiased text-gray-900">
+        <div class="flex flex-col items-center min-h-screen pt-6 sm:justify-center sm:pt-0 bg-slate-50">
+
+            <!-- Custom CSS Logo -->
             <div>
-                <a href="/">
-                    <x-application-logo class="w-20 h-20 fill-current text-gray-500" />
+                <a href="/" class="flex items-center gap-2 transition-transform group hover:scale-105">
+                    <div class="flex items-center justify-center w-12 h-12 bg-blue-900 shadow-lg rounded-br-2xl rounded-tl-2xl">
+                        <div class="w-4 h-4 rounded-full bg-emerald-400 animate-pulse"></div>
+                    </div>
+                    <span class="text-4xl font-extrabold tracking-tight text-blue-900">Rent<span class="text-emerald-500">.app</span></span>
                 </a>
             </div>
 
-            <div class="w-full sm:max-w-md mt-6 px-6 py-4 bg-white shadow-md overflow-hidden sm:rounded-lg">
+            <!-- Form Container -->
+            <div class="w-full px-8 py-10 mt-8 overflow-hidden bg-white border shadow-2xl sm:max-w-md border-slate-100 sm:rounded-xl">
                 {{ $slot }}
+            </div>
+
+            <!-- Footer text for trust -->
+            <div class="mt-8 text-sm text-slate-400">
+                &copy; {{ date('Y') }} Rent.app — Gestão Imobiliária Segura
             </div>
         </div>
     </body>

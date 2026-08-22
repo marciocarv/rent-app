@@ -53,6 +53,61 @@ class ContractController extends Controller
 
         // 3. We return a simple redirect!
         return redirect()->route('contracts.index')
-                         ->with('success', 'Contract created and unit marked as occupied!');
+                         ->with('success', 'Contrato Criado e Unidade Marcada como Ocupada!');
+    }
+
+    public function terminate(Contract $contract)
+    {
+        // 1. Ensure the user owns this contract
+        if ($contract->landlord_id !== auth()->id()) {
+            abort(403, 'Acesso negado.');
+        }
+
+        // 2. Update the contract status
+        $contract->update([
+            'status' => 'terminated',
+            'end_date' => now(), // Optionally log exactly when it ended
+        ]);
+
+        // 3. Optional but recommended: Delete pending future rent charges
+        // This prevents the dashboard from showing "overdue" rent for a finished contract
+        $contract->transactions()
+            ->where('status', 'pending')
+            ->where('due_date', '>', now())
+            ->delete();
+
+        // 4. Update the Unit status back to vacant
+        if ($contract->unit) {
+            $contract->unit->update(['status' => 'vacant']);
+        }
+
+        return redirect()->route('contracts.index')->with('success', 'Contrato encerrado com sucesso. A unidade agora está vaga e cobranças futuras foram canceladas.');
+    }
+
+    public function document(Contract $contract)
+    {
+        // 1. Ensure the user owns this contract
+        if ($contract->landlord_id !== auth()->id()) {
+            abort(403, 'Acesso negado.');
+        }
+
+        // 2. Load relationships to get names and addresses
+        $contract->load(['tenant', 'unit.property', 'landlord']);
+
+        // 3. Fetch the landlord's saved templates
+        $templates = \App\Models\ContractTemplate::where('landlord_id', auth()->id())->get();
+
+        // 4. Map the dynamic variables
+        $variables = [
+            '[LOCADOR_NOME]' => $contract->landlord->name ?? 'N/A',
+            '[LOCATARIO_NOME]' => $contract->tenant->name ?? 'N/A',
+            '[IMOVEL_ENDERECO]' => $contract->unit->property->address ?? 'N/A',
+            '[VALOR_ALUGUEL]' => 'R$ ' . number_format($contract->monthly_rent, 2, ',', '.'),
+            '[DATA_INICIO]' => \Carbon\Carbon::parse($contract->start_date)->format('d/m/Y'),
+            '[DATA_FIM]' => \Carbon\Carbon::parse($contract->end_date)->format('d/m/Y'),
+            '[DIA_VENCIMENTO]' => $contract->due_day,
+        ];
+
+        return view('contracts.document', compact('contract', 'templates', 'variables'));
     }
 }

@@ -28,7 +28,12 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
-        return redirect()->intended(route('dashboard', absolute: false));
+        // Check using your isTenant() method
+        if ($request->user()->isTenant()) {
+            return redirect()->intended(route('tenants.dashboard'));
+        }
+
+        return redirect()->intended(route('dashboard'));
     }
 
     /**

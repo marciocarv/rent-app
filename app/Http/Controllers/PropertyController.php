@@ -6,6 +6,8 @@ use App\Http\Requests\StorePropertyRequest;
 use App\Models\Property;
 use Illuminate\Http\Request;
 use App\Http\Requests\UpdatePropertyRequest;
+use Illuminate\Support\Facades\DB;
+use App\Models\Unit;
 
 class PropertyController extends Controller
 {
@@ -14,8 +16,8 @@ class PropertyController extends Controller
      */
     public function index()
     {
-        // Thanks to our BelongsToTenant trait, this ONLY fetches the logged-in user's properties!
-        $properties = Property::latest()->get();
+        // withCount('units') automatically adds a 'units_count' attribute to each property
+        $properties = Property::withCount('units')->latest()->get();
 
         return view('properties.index', compact('properties'));
     }
@@ -33,12 +35,43 @@ class PropertyController extends Controller
      */
     public function store(StorePropertyRequest $request)
     {
-        // The data is already validated by the time it reaches this line.
-        // The BelongsToTenant trait will automatically attach the landlord_id!
-        Property::create($request->validated());
+        $validated = $request->validated();
+
+        DB::transaction(function () use ($validated) {
+            // 1. Cria o Imóvel com as 3 opções do Enum
+            $property = Property::create([
+                'name' => $validated['name'],
+                'address' => $validated['address'],
+                'type' => $validated['type'], // Salva o tipo real (ex: residencial, comercial)
+                'landlord_id' => auth()->id(),
+            ]);
+
+            // 2. Cria as Unidades com os novos campos
+            if ($validated['is_multi_unit'] === 'no') {
+                // Imóvel Único (Cria 1 unidade principal)
+                $property->units()->create([
+                    'name' => 'Unidade Principal',
+                    'bedrooms' => $validated['bedrooms'] ?? 0,
+                    'bathrooms' => $validated['bathrooms'] ?? 0,
+                    'status' => $validated['status'] ?? 'vacant',
+                    'landlord_id' => auth()->id(),
+                ]);
+            } else {
+                // Múltiplas Unidades (Cria as unidades do array dinâmico)
+                foreach ($validated['units'] as $unitData) {
+                    $property->units()->create([
+                        'name' => $unitData['name'],
+                        'bedrooms' => $unitData['bedrooms'] ?? 0,
+                        'bathrooms' => $unitData['bathrooms'] ?? 0,
+                        'status' => $unitData['status'] ?? 'vacant',
+                        'landlord_id' => auth()->id(),
+                    ]);
+                }
+            }
+        });
 
         return redirect()->route('properties.index')
-                         ->with('success', 'Property added successfully!');
+                         ->with('success', 'Imóvel e unidades cadastrados com sucesso!');
     }
 
     public function edit(Property $property)
@@ -66,5 +99,14 @@ class PropertyController extends Controller
 
         return redirect()->route('properties.index')
                          ->with('success', 'Property deleted successfully!');
+    }
+
+    public function show(Property $property)
+    {
+        // We use 'load' to eagerly fetch the units associated with this property,
+        // preventing the N+1 query performance issue.
+        $property->load('units');
+
+        return view('properties.show', compact('property'));
     }
 }
