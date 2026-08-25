@@ -24,7 +24,7 @@ return new class extends Migration
             $table->decimal('monthly_rent', 10, 2);
             $table->decimal('security_deposit', 10, 2)->default(0);
 
-            $table->string('status')->default('active');
+            $table->string('status')->default('draft');
 
             $table->timestamps();
         });

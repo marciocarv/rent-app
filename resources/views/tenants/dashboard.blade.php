@@ -19,15 +19,37 @@
                 @if($contract)
                     <div class="flex items-center justify-between p-6 mb-8 bg-white border shadow-sm rounded-xl border-slate-100">
                         <div>
-                            <p class="mb-1 text-sm font-bold tracking-wider uppercase text-slate-500">Contrato Ativo</p>
+                            <p class="mb-1 text-sm font-bold tracking-wider uppercase {{ $contract->status === \App\Enums\ContractStatus::PendingSignatures ? 'text-amber-600' : 'text-slate-500' }}">
+                                {{ $contract->status === \App\Enums\ContractStatus::PendingSignatures ? 'Aguardando Sua Assinatura' : 'Contrato Ativo' }}
+                            </p>
                             <h3 class="text-2xl font-extrabold text-blue-900">
                                 {{ $contract->unit?->property?->name ?? 'Imóvel' }} - {{ $contract->unit?->name ?? 'Unidade' }}
                             </h3>
                             <p class="mt-1 text-sm text-slate-600">Locador: {{ $contract->landlord->name }}</p>
                         </div>
-                        <button @click="isTicketModalOpen = true" class="bg-blue-600 text-white px-5 py-2.5 rounded-lg text-sm font-bold shadow-sm hover:bg-blue-500 transition-colors">
-                            + Abrir Chamado
-                        </button>
+
+                        <div class="flex items-center gap-3">
+                            <!-- Contract Action Button -->
+                            <a href="{{ route('tenant.contracts.show', $contract) }}"
+                               class="flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-bold shadow-sm transition-colors
+                               {{ $contract->status === \App\Enums\ContractStatus::PendingSignatures && !$contract->tenant_signed_at
+                                    ? 'bg-amber-500 hover:bg-amber-400 text-white animate-pulse'
+                                    : 'bg-slate-100 hover:bg-slate-200 text-slate-700' }}">
+
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                </svg>
+
+                                {{ $contract->status === \App\Enums\ContractStatus::PendingSignatures && !$contract->tenant_signed_at
+                                    ? 'Assinar Contrato'
+                                    : 'Ver Contrato' }}
+                            </a>
+
+                            <!-- Ticket Button -->
+                            <button @click="isTicketModalOpen = true" class="bg-blue-600 text-white px-5 py-2.5 rounded-lg text-sm font-bold shadow-sm hover:bg-blue-500 transition-colors">
+                                + Abrir Chamado
+                            </button>
+                        </div>
                     </div>
                 @else
                     <div class="p-6 mb-8 border bg-amber-50 text-amber-800 rounded-xl border-amber-200">

@@ -32,6 +32,12 @@ Route::middleware(['auth', 'verified', EnsureUserIsLandlord::class])->group(func
     Route::post('/financeiro/despesas', [TransactionController::class, 'storeExpense'])->name('transactions.storeExpense');
     Route::get('/manutencao', [TicketController::class, 'index'])->name('tickets.index');
     Route::patch('/manutencao/{ticket}/status', [TicketController::class, 'updateStatus'])->name('tickets.updateStatus');
+    Route::post('/templates/defaults', [App\Http\Controllers\ContractTemplateController::class, 'generateDefaults'])->name('templates.defaults');
+    Route::resource('templates', App\Http\Controllers\ContractTemplateController::class);
+    Route::post('/contracts/{contract}/document/finalize', [App\Http\Controllers\ContractController::class, 'finalizeDocument'])
+    ->name('contracts.document.finalize');
+    Route::post('/contracts/{contract}/document/sign-landlord', [App\Http\Controllers\ContractController::class, 'signLandlord'])
+    ->name('contracts.document.sign-landlord');
 
 });
 
@@ -44,6 +50,8 @@ Route::middleware('auth')->group(function () {
 Route::middleware(['web', 'auth', 'verified', EnsureUserIsTenant::class])->group(function () {
     Route::get('/meu-imovel', [TenantController::class, 'dashboard'])->name('tenants.dashboard');
     Route::post('/meu-imovel/chamados', [TenantController::class, 'storeTicket'])->name('tenant.tickets.store');
+    Route::get('/tenant/contracts/{contract}', [App\Http\Controllers\TenantContractController::class, 'show'])->name('tenant.contracts.show');
+    Route::post('/tenant/contracts/{contract}/sign', [App\Http\Controllers\TenantContractController::class, 'sign'])->name('tenant.contracts.sign');
 });
 
 require __DIR__.'/auth.php';

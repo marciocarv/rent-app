@@ -12,6 +12,8 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
+use App\Enums\MaritalStatus;
+use Illuminate\Validation\Rule;
 
 class RegisteredUserController extends Controller
 {
@@ -34,12 +36,28 @@ class RegisteredUserController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
+
+            'phone' => ['required', 'string', 'max:20'],
+            'document_number' => ['required', 'string', 'max:30'],
+            'rg' => ['required', 'string', 'max:30'],
+            'nationality' => ['required', 'string', 'max:50'],
+            'marital_status' => ['required', Rule::enum(MaritalStatus::class)],
+            'address' => ['required', 'string', 'max:255'],
         ]);
 
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
+
+            'phone' => $request->phone,
+            'document_number' => $request->document_number,
+            'rg' => $request->rg,
+            'nationality' => $request->nationality,
+            'address' => $request->address,
+
+            'role' => \App\Enums\UserRole::Landlord,
+            'marital_status' => $request->marital_status,
         ]);
 
         event(new Registered($user));

@@ -15,16 +15,19 @@ class Contract extends Model
     use HasFactory, BelongsToTenant;
 
     protected $fillable = [
-        'landlord_id',
-        'unit_id',
         'tenant_id',
+        'unit_id',
         'start_date',
         'end_date',
         'monthly_rent',
-        'security_deposit',
-        'status',
         'due_day',
-        'payment_method',
+        'document_body',
+        'document_hash',
+        'status',
+        'landlord_signed_at',
+        'landlord_sign_ip',
+        'tenant_signed_at',
+        'tenant_sign_ip'
     ];
 
     protected function casts(): array
@@ -35,6 +38,8 @@ class Contract extends Model
             'due_day' => 'integer',
             'status' => ContractStatus::class,
             'payment_method' => PaymentMethod::class,
+            'landlord_signed_at' => 'datetime',
+            'tenant_signed_at' => 'datetime',
         ];
     }
 

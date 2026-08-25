@@ -14,30 +14,74 @@
             <x-input-error :messages="$errors->get('name')" class="mt-2" />
         </div>
 
-        <!-- Email Address -->
-        <div class="mt-4">
-            <label for="email" class="block text-sm font-medium text-blue-900">E-mail Profissional</label>
-            <input id="email" class="block w-full mt-1 rounded-md shadow-sm border-slate-300 focus:border-emerald-500 focus:ring-emerald-500" type="email" name="email" :value="old('email')" required autocomplete="username" />
-            <x-input-error :messages="$errors->get('email')" class="mt-2" />
+        <!-- Email & Phone -->
+        <div class="grid grid-cols-1 gap-4 mt-4 sm:grid-cols-2">
+            <div>
+                <label for="email" class="block text-sm font-medium text-blue-900">E-mail Profissional</label>
+                <input id="email" class="block w-full mt-1 rounded-md shadow-sm border-slate-300 focus:border-emerald-500 focus:ring-emerald-500" type="email" name="email" :value="old('email')" required autocomplete="username" />
+                <x-input-error :messages="$errors->get('email')" class="mt-2" />
+            </div>
+            <div>
+                <label for="phone" class="block text-sm font-medium text-blue-900">Telefone / WhatsApp</label>
+                <input id="phone" oninput="maskPhone(event)" maxlength="15" class="block w-full mt-1 rounded-md shadow-sm border-slate-300 focus:border-emerald-500 focus:ring-emerald-500" type="text" name="phone" :value="old('phone')" required />
+                <x-input-error :messages="$errors->get('phone')" class="mt-2" />
+            </div>
         </div>
 
-        <!-- Password -->
-        <div class="mt-4">
-            <label for="password" class="block text-sm font-medium text-blue-900">Senha Segura</label>
-            <input id="password" class="block w-full mt-1 rounded-md shadow-sm border-slate-300 focus:border-emerald-500 focus:ring-emerald-500"
-                            type="password"
-                            name="password"
-                            required autocomplete="new-password" />
-            <x-input-error :messages="$errors->get('password')" class="mt-2" />
+        <!-- Documents -->
+        <div class="grid grid-cols-1 gap-4 mt-4 sm:grid-cols-2">
+            <div>
+                <label for="document_number" class="block text-sm font-medium text-blue-900">CPF ou CNPJ</label>
+                <input id="document_number" oninput="maskDoc(event)" maxlength="18" class="block w-full mt-1 rounded-md shadow-sm border-slate-300 focus:border-emerald-500 focus:ring-emerald-500" type="text" name="document_number" :value="old('document_number')" required />
+                <x-input-error :messages="$errors->get('document_number')" class="mt-2" />
+            </div>
+            <div>
+                <label for="rg" class="block text-sm font-medium text-blue-900">RG</label>
+                <input id="rg" class="block w-full mt-1 rounded-md shadow-sm border-slate-300 focus:border-emerald-500 focus:ring-emerald-500" type="text" name="rg" :value="old('rg')" required />
+                <x-input-error :messages="$errors->get('rg')" class="mt-2" />
+            </div>
         </div>
 
-        <!-- Confirm Password -->
+        <!-- Personal Details -->
+        <div class="grid grid-cols-1 gap-4 mt-4 sm:grid-cols-2">
+            <div>
+                <label for="nationality" class="block text-sm font-medium text-blue-900">Nacionalidade</label>
+                <input id="nationality" class="block w-full mt-1 rounded-md shadow-sm border-slate-300 focus:border-emerald-500 focus:ring-emerald-500" type="text" name="nationality" :value="old('nationality')" placeholder="Ex: Brasileiro(a)" required />
+                <x-input-error :messages="$errors->get('nationality')" class="mt-2" />
+            </div>
+            <div>
+                <label for="marital_status" class="block text-sm font-medium text-blue-900">Estado Civil</label>
+                <select id="marital_status" name="marital_status" class="block w-full mt-1 bg-white rounded-md shadow-sm border-slate-300 focus:border-emerald-500 focus:ring-emerald-500" required>
+                    <option value="">Selecione...</option>
+                    <option value="single" @if(old('marital_status') == 'single') selected @endif>Solteiro(a)</option>
+                    <option value="married" @if(old('marital_status') == 'married') selected @endif>Casado(a)</option>
+                    <option value="divorced" @if(old('marital_status') == 'divorced') selected @endif>Divorciado(a)</option>
+                    <option value="widowed" @if(old('marital_status') == 'widowed') selected @endif>Viúvo(a)</option>
+                    <option value="stable_union" @if(old('marital_status') == 'stable_union') selected @endif>União Estável</option>
+                </select>
+                <x-input-error :messages="$errors->get('marital_status')" class="mt-2" />
+            </div>
+        </div>
+
+        <!-- Address -->
         <div class="mt-4">
-            <label for="password_confirmation" class="block text-sm font-medium text-blue-900">Confirme a Senha</label>
-            <input id="password_confirmation" class="block w-full mt-1 rounded-md shadow-sm border-slate-300 focus:border-emerald-500 focus:ring-emerald-500"
-                            type="password"
-                            name="password_confirmation" required autocomplete="new-password" />
-            <x-input-error :messages="$errors->get('password_confirmation')" class="mt-2" />
+            <label for="address" class="block text-sm font-medium text-blue-900">Endereço Completo</label>
+            <input id="address" class="block w-full mt-1 rounded-md shadow-sm border-slate-300 focus:border-emerald-500 focus:ring-emerald-500" type="text" name="address" :value="old('address')" placeholder="Rua, Número, Bairro, Cidade - UF" required />
+            <x-input-error :messages="$errors->get('address')" class="mt-2" />
+        </div>
+
+        <!-- Passwords -->
+        <div class="grid grid-cols-1 gap-4 mt-4 sm:grid-cols-2">
+            <div>
+                <label for="password" class="block text-sm font-medium text-blue-900">Senha Segura</label>
+                <input id="password" class="block w-full mt-1 rounded-md shadow-sm border-slate-300 focus:border-emerald-500 focus:ring-emerald-500" type="password" name="password" required autocomplete="new-password" />
+                <x-input-error :messages="$errors->get('password')" class="mt-2" />
+            </div>
+            <div>
+                <label for="password_confirmation" class="block text-sm font-medium text-blue-900">Confirme a Senha</label>
+                <input id="password_confirmation" class="block w-full mt-1 rounded-md shadow-sm border-slate-300 focus:border-emerald-500 focus:ring-emerald-500" type="password" name="password_confirmation" required autocomplete="new-password" />
+                <x-input-error :messages="$errors->get('password_confirmation')" class="mt-2" />
+            </div>
         </div>
 
         <!-- Register Button -->
@@ -54,4 +98,34 @@
             </a>
         </div>
     </form>
+    <script>
+        function maskPhone(e) {
+            let v = e.target.value.replace(/\D/g, ""); // Remove all non-digits
+
+            // Apply formatting: (XX) XXXXX-XXXX or (XX) XXXX-XXXX
+            v = v.replace(/^(\d{2})(\d)/g, "($1) $2");
+            v = v.replace(/(\d)(\d{4})$/, "$1-$2");
+
+            e.target.value = v;
+        }
+
+        function maskDoc(e) {
+            let v = e.target.value.replace(/\D/g, ""); // Remove all non-digits
+
+            if (v.length <= 11) {
+                // CPF Mask: 000.000.000-00
+                v = v.replace(/(\d{3})(\d)/, "$1.$2");
+                v = v.replace(/(\d{3})(\d)/, "$1.$2");
+                v = v.replace(/(\d{3})(\d{1,2})$/, "$1-$2");
+            } else {
+                // CNPJ Mask: 00.000.000/0000-00
+                v = v.replace(/^(\d{2})(\d)/, "$1.$2");
+                v = v.replace(/^(\d{2})\.(\d{3})(\d)/, "$1.$2.$3");
+                v = v.replace(/\.(\d{3})(\d)/, ".$1/$2");
+                v = v.replace(/(\d{4})(\d)/, "$1-$2");
+            }
+
+            e.target.value = v;
+        }
+    </script>
 </x-guest-layout>

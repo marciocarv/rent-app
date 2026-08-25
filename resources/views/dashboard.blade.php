@@ -136,10 +136,25 @@
                                 <p class="text-sm text-slate-500">Aberto por: {{ $ticket->tenant?->name ?? 'Desconhecido' }}</p>
                             </div>
 
-                            @if($ticket->status === 'Aberto')
-                                <span class="px-3 py-1 text-xs font-bold rounded-full bg-amber-100 text-amber-700">Aberto</span>
+                            @php
+                                $statusValue = is_object($ticket->status) ? $ticket->status->value : $ticket->status;
+                                $statusLabel = is_object($ticket->status) && method_exists($ticket->status, 'label')
+                                    ? $ticket->status->label()
+                                    : ucfirst($statusValue);
+                            @endphp
+
+                            @if($statusValue === 'open')
+                                <span class="px-3 py-1 text-xs font-bold rounded-full bg-amber-100 text-amber-700">
+                                    {{ $statusLabel }}
+                                </span>
+                            @elseif($statusValue === 'in_progress')
+                                <span class="px-3 py-1 text-xs font-bold text-blue-700 bg-blue-100 rounded-full">
+                                    {{ $statusLabel }}
+                                </span>
                             @else
-                                <span class="px-3 py-1 text-xs font-bold rounded-full bg-slate-100 text-slate-700">Resolvido</span>
+                                <span class="px-3 py-1 text-xs font-bold rounded-full bg-emerald-100 text-emerald-700">
+                                    {{ $statusLabel }}
+                                </span>
                             @endif
                         </div>
                     @empty
