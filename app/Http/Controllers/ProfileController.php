@@ -2,59 +2,47 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\ProfileUpdateRequest;
-use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Redirect;
-use Illuminate\View\View;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Http;
 
 class ProfileController extends Controller
 {
-    /**
-     * Display the user's profile form.
-     */
-    public function edit(Request $request): View
+    public function index(Request $request)
     {
-        return view('profile.edit', [
-            'user' => $request->user(),
-        ]);
-    }
+        $user = $request->user();
+        $subscriptionData = null;
 
-    /**
-     * Update the user's profile information.
-     */
-    public function update(ProfileUpdateRequest $request): RedirectResponse
-    {
-        $request->user()->fill($request->validated());
+        // If the user has an active MP subscription, fetch the real-time details
+        if ($user->mp_subscription_id) {
+            $response = Http::withoutVerifying()
+                ->withToken(env('MERCADOPAGO_ACCESS_TOKEN'))
+                ->get("https://api.mercadopago.com/preapproval/{$user->mp_subscription_id}");
 
-        if ($request->user()->isDirty('email')) {
-            $request->user()->email_verified_at = null;
+            if ($response->successful()) {
+                $subscriptionData = $response->json();
+            }
         }
 
-        $request->user()->save();
-
-        return Redirect::route('profile.edit')->with('status', 'profile-updated');
+        return view('profile.index', [
+            'user' => $user,
+            'subscription' => $subscriptionData,
+        ]);
     }
 
-    /**
-     * Delete the user's account.
-     */
-    public function destroy(Request $request): RedirectResponse
+    public function updatePassword(Request $request)
     {
-        $request->validateWithBag('userDeletion', [
-            'password' => ['required', 'current_password'],
+        // Validate the passwords
+        $request->validate([
+            'current_password' => ['required', 'current_password'],
+            'password' => ['required', 'min:8', 'confirmed'], // 'confirmed' expects a 'password_confirmation' field
         ]);
 
-        $user = $request->user();
+        // Encrypt and save the new password
+        $request->user()->update([
+            'password' => Hash::make($request->password)
+        ]);
 
-        Auth::logout();
-
-        $user->delete();
-
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
-
-        return Redirect::to('/');
+        return back()->with('success', 'Senha atualizada com sucesso!');
     }
 }

@@ -35,4 +35,19 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->shouldRenderJsonWhen(
             fn (Request $request) => $request->is('api/*') || $request->expectsJson(),
         );
-    })->create();
+    })
+
+    ->withMiddleware(function (Middleware $middleware) {
+        // Allow Mercado Pago to bypass CSRF verification
+        $middleware->validateCsrfTokens(except: [
+            'webhook/mercadopago',
+        ]);
+    })
+
+    ->withMiddleware(function (Middleware $middleware) {
+        // ... your other middleware ...
+        $middleware->alias([
+            'admin' => \App\Http\Middleware\EnsureUserIsAdmin::class,
+        ]);
+    })
+    ->create();

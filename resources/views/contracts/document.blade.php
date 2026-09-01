@@ -40,6 +40,9 @@
                                     <button type="submit" class="text-sm font-bold text-blue-600 transition-colors hover:text-blue-800 hover:underline">
                                         + Criar Modelos de Contrato Padrão Automaticamente
                                     </button>
+                                    <a href="{{ route('templates') }}" class="text-sm font-bold text-blue-600 transition-colors hover:text-blue-800 hover:underline">
+                                        + Criar Seu modelo de contrato personalizado
+                                    </a>
                                 </form>
                             @endif
                         @else

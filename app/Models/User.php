@@ -25,13 +25,22 @@ use App\Enums\MaritalStatus;
             'phone',
             'address',
             'spouse_name',
-            'spouse_document'])]
+            'spouse_document',
+            'plan_tier',
+            'mp_subscription_id',
+            'plan_expires_at',
+            ])]
 #[Hidden(['password', 'remember_token'])]
 
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
+
+    public function isAdmin(): bool
+    {
+        return $this->role === UserRole::Admin;
+    }
 
     public function isLandlord(): bool
     {
@@ -56,6 +65,18 @@ class User extends Authenticatable
             'role' => UserRole::class,
             'landlord_id',
             'marital_status' => MaritalStatus::class,
+            'plan_tier' => \App\Enums\PlanTier::class, // Cast to Enum
+            'plan_expires_at' => 'datetime',
         ];
+    }
+
+    public function properties()
+    {
+        return $this->hasMany(Property::class, 'landlord_id');
+    }
+
+    public function units()
+    {
+        return $this->hasMany(Unit::class, 'landlord_id');
     }
 }

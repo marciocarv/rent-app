@@ -32,13 +32,18 @@ class TenantController extends Controller
 
     public function store(StoreTenantRequest $request)
     {
+        // 1. Remove any non-numeric characters from the CPF (e.g., "123.456.789-00" becomes "12345678900")
+        $cleanCpf = preg_replace('/[^0-9]/', '', $request->document_number);
+
+        // 2. Extract the first 5 digits
+        $initialPassword = substr($cleanCpf, 0, 5);
+
         User::create([
             'name' => $request->name,
             'email' => $request->email,
-            'password' => bcrypt('12345678'),
+            'password' => bcrypt($initialPassword),
             'role' => UserRole::Tenant,
             'landlord_id' => auth()->id(),
-            // Novos campos:
             'phone' => $request->phone,
             'document_number' => $request->document_number,
             'rg' => $request->rg,
@@ -51,7 +56,7 @@ class TenantController extends Controller
         ]);
 
         return redirect()->route('tenants.index')
-                         ->with('success', 'Inquilino cadastrado com sucesso!');
+                         ->with('success', 'Inquilino cadastrado com sucesso! A senha padrão são os 5 primeiros dígitos do CPF.');
     }
 
     public function destroy(User $tenant)

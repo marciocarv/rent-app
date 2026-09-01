@@ -16,6 +16,9 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+Route::post('/webhook/mercadopago', [\App\Http\Controllers\SubscriptionController::class, 'webhook'])
+    ->name('webhook.mercadopago');
+
 
 // Grouping routes that require the user to be logged in and verified
 Route::middleware(['auth', 'verified', EnsureUserIsLandlord::class])->group(function () {
@@ -38,7 +41,17 @@ Route::middleware(['auth', 'verified', EnsureUserIsLandlord::class])->group(func
     ->name('contracts.document.finalize');
     Route::post('/contracts/{contract}/document/sign-landlord', [App\Http\Controllers\ContractController::class, 'signLandlord'])
     ->name('contracts.document.sign-landlord');
-
+    Route::get('/planos', function () {
+        return view('plans.index');
+    })->name('plans.index');
+    Route::post('/planos/checkout/{plan}/{cycle}', [\App\Http\Controllers\SubscriptionController::class, 'checkout'])
+    ->name('plans.checkout');
+    Route::get('/plans/callback/{plan}/{cycle}', [\App\Http\Controllers\SubscriptionController::class, 'callback'])->name('plans.callback');
+    Route::get('/perfil', [\App\Http\Controllers\ProfileController::class, 'index'])
+    ->name('profile.index');
+    Route::put('/perfil/senha', [\App\Http\Controllers\ProfileController::class, 'updatePassword'])
+    ->name('profile.password');
+    Route::get('/api/cupons/check', [\App\Http\Controllers\CouponController::class, 'check'])->middleware('auth')->name('api.coupons.check');
 });
 
 Route::middleware('auth')->group(function () {
@@ -52,6 +65,14 @@ Route::middleware(['web', 'auth', 'verified', EnsureUserIsTenant::class])->group
     Route::post('/meu-imovel/chamados', [TenantController::class, 'storeTicket'])->name('tenant.tickets.store');
     Route::get('/tenant/contracts/{contract}', [App\Http\Controllers\TenantContractController::class, 'show'])->name('tenant.contracts.show');
     Route::post('/tenant/contracts/{contract}/sign', [App\Http\Controllers\TenantContractController::class, 'sign'])->name('tenant.contracts.sign');
+});
+
+Route::middleware(['auth', 'admin'])->group(function () {
+    Route::get('/admin', [\App\Http\Controllers\AdminController::class, 'index'])->name('admin.index');
+    Route::put('/admin/users/{user}/plan', [\App\Http\Controllers\AdminController::class, 'updateUserPlan'])->name('admin.users.plan');
+    Route::get('/admin/cupons', [\App\Http\Controllers\CouponController::class, 'index'])->name('admin.coupons.index');
+    Route::post('/admin/cupons', [\App\Http\Controllers\CouponController::class, 'store'])->name('admin.coupons.store');
+    Route::delete('/admin/cupons/{coupon}', [\App\Http\Controllers\CouponController::class, 'destroy'])->name('admin.coupons.destroy');
 });
 
 require __DIR__.'/auth.php';

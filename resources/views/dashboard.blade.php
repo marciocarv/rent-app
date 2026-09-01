@@ -24,6 +24,11 @@
 
         <!-- Stat Card 1: Properties / Units -->
         <div class="p-6 bg-white border shadow-sm rounded-xl border-slate-100">
+            @if (session('success'))
+                <div class="p-4 mb-6 border-l-4 rounded-md text-emerald-900 bg-emerald-100 border-emerald-500">
+                    {{ session('success') }}
+                </div>
+            @endif
             <div class="flex items-center justify-between">
                 <div>
                     <p class="mb-1 text-sm font-medium text-slate-500">Imóveis / Unidades</p>

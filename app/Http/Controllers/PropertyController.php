@@ -25,9 +25,37 @@ class PropertyController extends Controller
     /**
      * Show the form for creating a new property.
      */
-    public function create()
+    public function create(Request $request)
     {
+        $user = $request->user();
+
+        // Limites baseados em UNIDADES, não imóveis
+        $limit = match($user->plan_tier->value) {
+            'free' => 2,
+            'basic' => 6, // Exemplo: Básico permite até 10 unidades
+            'premium' => PHP_INT_MAX,
+            default => 1,
+        };
+
+        $limit = match($user->plan_tier->value) {
+            'free' => 1,
+            'basic' => 3,
+            'premium' => PHP_INT_MAX,
+            default => 1,
+        };
+
+        // Verifica as unidades atuais
+        if ($user->units()->count() >= $limit) {
+            return redirect()->route('plans.index')->with('error', 'Você atingiu o limite de unidades do seu plano. Faça um upgrade para adicionar mais!');
+        }
+
+        if ($user->properties()->count() >= $limit) {
+            return redirect()->route('plans.index')->with('error', 'Não foi possível salvar: Limite de imóveis do seu plano atingido. Faça um upgrade para adicionar mais!');
+        }
+
+
         return view('properties.create');
+
     }
 
     /**
@@ -35,7 +63,40 @@ class PropertyController extends Controller
      */
     public function store(StorePropertyRequest $request)
     {
+        $user = $request->user();
         $validated = $request->validated();
+
+        // Re-verify limit securely on the backend
+        $limit = match($user->plan_tier->value) {
+            'free' => 1,
+            'basic' => 3,
+            'premium' => PHP_INT_MAX,
+            default => 1,
+        };
+
+        if ($user->properties()->count() >= $limit) {
+            return redirect()->route('plans.index')->with('error', 'Não foi possível salvar: Limite de imóveis do seu plano atingido, Faça um upgrade para adicionar mais!');
+        }
+
+        $limit2 = match($user->plan_tier->value) {
+            'free' => 2,
+            'basic' => 6,
+            'premium' => PHP_INT_MAX,
+            default => 1,
+        };
+
+        // Conta quantas unidades o usuário já tem
+        $currentUnits = $user->units()->count();
+
+        // Conta quantas unidades ele está tentando criar agora
+        $newUnits = ($validated['is_multi_unit'] === 'no') ? 1 : count($validated['units']);
+
+        // Se a soma ultrapassar o limite, bloqueia a ação
+        if (($currentUnits + $newUnits) > $limit2) {
+            return redirect()->route('plans.index')->with('error', 'Não foi possível salvar: Limite de imóveis do seu plano atingido, Faça um upgrade para adicionar mais!');
+            //return back()->with('error', "Você só tem limite para criar mais " . ($limit2 - $currentUnits) . " unidade(s) no seu plano atual.")->withInput();
+        }
+
 
         DB::transaction(function () use ($validated) {
             // 1. Cria o Imóvel com as 3 opções do Enum
@@ -87,7 +148,7 @@ class PropertyController extends Controller
         $property->update($request->validated());
 
         return redirect()->route('properties.index')
-                         ->with('success', 'Property updated successfully!');
+                         ->with('success', 'Imóvel alterado com sucesso!');
     }
 
     /**
@@ -98,7 +159,7 @@ class PropertyController extends Controller
         $property->delete();
 
         return redirect()->route('properties.index')
-                         ->with('success', 'Property deleted successfully!');
+                         ->with('success', 'Imóvel apagado com sucesso!');
     }
 
     public function show(Property $property)
